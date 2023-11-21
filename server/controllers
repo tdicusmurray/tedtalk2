@@ -1,0 +1,36 @@
+// controllers.js
+
+const { Message } = require('./models');
+
+// Initialize an array to store chat messages
+const messages = [];
+
+// Function to handle a new WebSocket connection
+function handleConnection(socket) {
+  console.log(`WebSocket connected: ${socket.id}`);
+
+  // Send a welcome message to the connected client
+  socket.emit('message', new Message(null, 'Welcome to the chat!', 'System', new Date()));
+
+  // Listen for incoming messages from the client
+  socket.on('message', (text, sender) => {
+    const timestamp = new Date();
+    const message = new Message(socket.id, text, sender, timestamp);
+    
+    // Add the message to the messages array
+    messages.push(message);
+
+    // Broadcast the message to all connected clients
+    io.emit('message', message);
+  });
+
+  // Listen for client disconnection
+  socket.on('disconnect', () => {
+    console.log(`WebSocket disconnected: ${socket.id}`);
+  });
+}
+
+module.exports = {
+  handleConnection,
+  messages,
+};

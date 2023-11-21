@@ -1,0 +1,31 @@
+const axios = require('axios/dist/axios');
+const app = require('./express/index');
+const port = process.env.PORT || 3001;
+
+// Middleware to parse JSON requests
+app.use(app.json());
+
+// Define an endpoint to receive requests from Teddy
+app.post('/teddy', async (req, res) => {
+  try {
+    // Extract the request data from Teddy
+    const { requestData } = req.body;
+
+    // Make a request to Lauren's API
+    const laurenResponse = await axios.post('http://localhost:3000/lauren', {
+      requestData,
+    });
+
+    // Extract and send back the response from Lauren to Teddy
+    const responseData = laurenResponse.data;
+    res.json({ responseData });
+  } catch (error) {
+    console.error('Error:', error.message);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`API server is running on port ${port}`);
+});
